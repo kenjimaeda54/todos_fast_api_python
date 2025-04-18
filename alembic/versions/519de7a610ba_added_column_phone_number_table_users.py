@@ -10,6 +10,9 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
+# para criar a revisão precisa rodar o comando
+# alembic revision -m "Nome sugestivo"
+# depois precisa rodar alembic upgrade <hash do revision id>
 
 # revision identifiers, used by Alembic.
 revision: str = '519de7a610ba'
@@ -19,7 +22,11 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.add_column("users",sa.Column("phone_number",sa.String(),nullable=True))
+    op.add_column("users", sa.Column("phone_number", sa.String(), nullable=True))
 
+
+# para remover a versão colocaria alguma coisa aqui tipo op.drop_column(nome tabela,nome da columna)
+# é depois rodaria
+# alembic downgrade -1
 def downgrade() -> None:
     pass

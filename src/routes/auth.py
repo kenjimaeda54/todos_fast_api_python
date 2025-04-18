@@ -75,7 +75,8 @@ async def crate_user(db: depends_db, user_request: Annotated[UserRequest,Body()]
          last_name = user_request.last_name,
          hashed_password = crypt_password.hash(user_request.password),
          is_active = True,
-         role = user_request.role
+         role = user_request.role,
+         phone_number = user_request.phone_number
      )
      user_with_user_email = db.query(Users).where(cast("Column[boolean]", Users.email == user_database.email)).first()
      user_with_user_name = db.query(Users).where(cast("Column[boolean]", Users.user_name == user_database.user_name)).first()

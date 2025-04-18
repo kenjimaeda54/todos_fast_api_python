@@ -19,6 +19,8 @@ alchemy_url_database = f'postgresql://{user_name_database}:{user_password_databa
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
 config = context.config
+
+#isso vai injetar no arquivo  alembic,ini o nome da variavel URL_SCHEMA_DB
 section = config.config_ini_section
 config.set_section_option(section,"URL_SCHEMA_DB",alchemy_url_database ) #seta a url do banco
 

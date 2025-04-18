@@ -1,7 +1,7 @@
 from typing import cast, Type
 
 from fastapi import APIRouter, Depends, HTTPException
-from fastapi.params import Body
+from fastapi.params import Body, Path
 from passlib.context import CryptContext
 from sqlalchemy.orm import Session
 from starlette import status
@@ -38,6 +38,16 @@ async def update_password(user: depends_user, db: depends_database,
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Error update password")
 
     user_database.hashed_password = crypt_password.hash(user_password_request.new_password)
+
+    db.add(user_database)
+    db.commit()
+
+
+@router.put("/{phone_number}",status_code=status.HTTP_204_NO_CONTENT)
+async def update_phone_number(user: depends_user,db: depends_database,phone_number: Annotated[str,Path()]):
+    user_database: Type[Users] = db.query(Users).filter(cast("Column[bool]", Users.id == user.get("id"))).first()
+
+    user_database.phone_number = phone_number
 
     db.add(user_database)
     db.commit()
