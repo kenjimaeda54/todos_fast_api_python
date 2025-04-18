@@ -1,6 +1,6 @@
 from typing import Annotated, cast
 
-from fastapi import  Depends, HTTPException, APIRouter
+from fastapi import Depends, HTTPException, APIRouter
 from fastapi.params import Path, Body
 from sqlalchemy.orm import Session
 from starlette import status
@@ -8,51 +8,60 @@ from starlette import status
 from src.entities.entities import Todos
 from src.infra.database import get_database
 from src.models.todos.todo_request import TodosRequest
+from src.routes.auth import get_current_user
 
-router = APIRouter()
+# tags organiza o swager
+# prefix é para adicoinar no roteador
+# exemplo aqui todos serão acessados apos o /baseurl/todos/nosos recursos
+router = APIRouter(
+    prefix="/todos",
+    tags=["todos"]
+)
 
-
-depends = Annotated[Session,Depends(get_database)]
-
-#Annotated e para garantir validação no casso estamos validando com o Session
-#ele valida , que o dado eserpado e oque esta no db.query
-#seria boa pratica usar o annotaded junto com o Path e o Query para garantir validação dos campos
-#pois insere metadados
-#depends e injeção dependencia estamos injetando o banco de dados
-@router.get("/todos",status_code=status.HTTP_200_OK)
-async  def read_all_todos(db: depends):
-    return db.query(Todos).all()
+depends_database = Annotated[Session, Depends(get_database)]
+depends_user = Annotated[dict, Depends(get_current_user)]
 
 
+# Annotated e para garantir validação no casso estamos validando com o Session
+# ele valida , que o dado eserpado e oque esta no db.query
+# seria boa pratica usar o annotaded junto com o Path e o Query para garantir validação dos campos
+# pois insere metadados
+# depends e injeção dependencia estamos injetando o banco de dados
+@router.get("", status_code=status.HTTP_200_OK)
+async def read_all_todos(usr: depends_user, db: depends_database):
+    return db.query(Todos).filter(cast("ColumnElement[bool]", Todos.owner_id == usr.get("id"))).all()
 
-@router.get( "/todos/{todo_id}",status_code=status.HTTP_200_OK)
-async def read_only_todo(db: depends, todo_id:  Annotated[int,Path(gt=0)]):
-    todo_database = db.query(Todos).where(cast("ColumnElement[bool]",Todos.id == todo_id)).first()
-    if  todo_database is not None:
+
+@router.get("/{todo_id}", status_code=status.HTTP_200_OK)
+async def read_only_todo(user: depends_user, db: depends_database, todo_id: Annotated[int, Path(gt=0)]):
+    todo_database = db.query(Todos).filter(cast("ColumnElement[bool]", Todos.id == todo_id)).filter(
+        cast("ColumnElement[bool]", Todos.owner_id == user.get("id"))
+    ).first()
+
+    if todo_database is not None:
         return todo_database
-    raise  HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Item not found")
+    raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Item not found")
 
 
-@router.post("/todos",status_code=status.HTTP_201_CREATED)
-async def create_todo(db: depends,todo_request: Annotated[TodosRequest,Body()]):
-    todo_model = Todos(**todo_request.model_dump())
+@router.post("", status_code=status.HTTP_201_CREATED)
+async def create_todo(user: depends_user, db: depends_database, todo_request: Annotated[TodosRequest, Body()]):
+    todo_model = Todos(**todo_request.model_dump(), owner_id=user.get("id"))
 
-    #ja que passei o commit false nas configurações preciso determinr manual
+    # ja que passei o commit false nas configurações preciso determinr manual
     db.add(todo_model)
     db.commit()
 
 
-@router.put("/todos/{todo_id}",status_code=status.HTTP_204_NO_CONTENT)
-async def update_todo(db: depends,
-                      todo_request: Annotated[TodosRequest,Body()],
-                      todo_id: Annotated[int,Path(gt=0)]):
-
-
-    todo_database = db.query(Todos).where(cast("ColumnElement[bool]", Todos.id == todo_id)).first()
+@router.put("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def update_todo(user: depends_user,
+                      db: depends_database,
+                      todo_request: Annotated[TodosRequest, Body()],
+                      todo_id: Annotated[int, Path(gt=0)]):
+    todo_database = db.query(Todos).filter(cast("ColumnElement[bool]", Todos.id == todo_id)) \
+        .filter(cast("ColumnElement[bool]", Todos.owner_id == user.get("id"))).first()
 
     if todo_database is None:
-        raise  HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Todo not found")
-
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
 
     todo_database.title = todo_request.title
     todo_database.description = todo_request.description
@@ -63,12 +72,14 @@ async def update_todo(db: depends,
     db.commit()
 
 
-@router.delete("/todos/{todo_id}",status_code=status.HTTP_204_NO_CONTENT)
-async def delete_todo(db:depends, todo_id: Annotated[int,Path(qt=0)]):
-    todo_database = db.query(Todos).where(cast("ColumnElement[bool]",Todos.id == todo_id)).first()
+@router.delete("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_todo(user: depends_user, db: depends_database, todo_id: Annotated[int, Path(qt=0)]):
+    todo_database = db.query(Todos).filter(cast("ColumnElement[bool]", Todos.id == todo_id)) \
+        .filter(cast("ColumnElement[bool]", Todos.owner_id == user.get("id"))).first()
 
     if todo_database is None:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Todo not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
 
-    db.query(Todos).where(cast("ColumnElement[bool]",Todos.id == todo_id)).delete()
+    db.query(Todos).filter(cast("ColumnElement[bool]", Todos.id == todo_id)) \
+        .filter(cast("ColumnElement[bool]", Todos.owner_id == user.get("id"))).delete()
     db.commit()

@@ -9,4 +9,5 @@ class UserRequest(BaseModel):
     password: str
     is_active: bool
     role: str
-    
+
+
