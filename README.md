@@ -1,18 +1,17 @@
 ## Motivação
-Aplicação completa para gerenciar seus Todo: adicionar,deletar é atualizar. Existe tambem opção de papeis como admin é usuario comun
-
+Aplicação completa para gerenciar suas tarefas: adicionar, deletar e atualizar. Existe também opção de papéis como admin é usuário comum
 
 ## Configuração
-- Para utilizar precisa carregar suas configurações do banco
-- O arquivo .env_example possuem as variaveis necessarias
+- Para utilizar, precisa carregar suas configurações do banco.
+- O arquivo .env_example possui as variáveis necessárias
 
   
 
 
 ## Features
-- Aprendi trabalhar com autenticação usando JWT
-- O pacote exige o caminho do endpoint que sera usado para retornar  o token
-- A url ***auth/token**** é endpoint abaixo existe um prefix auth nesse arquivo
+- Aprendi a trabalhar com autenticação usando JWT
+- O pacote exige o caminho do endpoint que será usado para retornar o token.
+- A url ***auth/token**** é endpoint, existe um prefix auth nessa url.
 
 ```python
 oauth_depends = OAuth2PasswordBearer(tokenUrl='auth/token')
@@ -36,7 +35,7 @@ async  def  read_token_authenticated(form_data: Annotated[OAuth2PasswordRequestF
 
 ##
 
-- Aprendi a usar injeção dependencia , normalmente vamos utilizar  quando alguma funcionalidade é dependente de outra para funcionar
+- Aprendi a usar injeção dependência, normalmente vamos utilizar quando alguma funcionalidade é dependente de outra para funcionar.
 
 ```python
 
@@ -50,10 +49,13 @@ depends_user = Annotated[dict, Depends(get_current_user)]
 ```
 
 ##
-- Utilizei o alembic para fazer as migrations
-- Se preciso de pegar as variaveis do .env é utilizar no arquivo **alembic.ini** preciso utilizar o arquivo env que e fornecido pelo alembic
-- Normalmente deixamos o fileConfig sem o if identado totalmente no canto esquerdo
-- Nossas entitades precisam estar no target_metada para conseguir criar as tabelas
+- Utilizei o alembic para fazer as migrações.
+- Só preciso pegar as variáveis do .env para utilizar no arquivo **alembic.ini** . 
+- Não conseguimos importar diretamente no alembic.ini
+- Por isso utilizamos o arquivo env fornecido pelo alembic
+- Deixamos normalmente o fileConfig sem o if identado totalmente no canto esquerdo.
+- Nossas entidades precisam estar no target_metada para conseguir criar as tabelas.
+
 
 ```python
 
