@@ -5,10 +5,10 @@ from fastapi.params import Path, Body
 from sqlalchemy.orm import Session
 from starlette import status
 
-from src.entities.entities import Todos
-from src.infra.database import get_database
-from src.models.todos.todo_request import TodosRequest
-from src.routes.auth import get_current_user
+from ..entities.entities import Todos
+from ..infra.database import get_database
+from ..models.todos.todo_request import TodosRequest
+from ..routes.auth import get_current_user
 
 # tags organiza o swager
 # prefix é para adicoinar no roteador
@@ -57,6 +57,7 @@ async def update_todo(user: depends_user,
                       db: depends_database,
                       todo_request: Annotated[TodosRequest, Body()],
                       todo_id: Annotated[int, Path(gt=0)]):
+
     todo_database = db.query(Todos).filter(cast("ColumnElement[bool]", Todos.id == todo_id)) \
         .filter(cast("ColumnElement[bool]", Todos.owner_id == user.get("id"))).first()
 

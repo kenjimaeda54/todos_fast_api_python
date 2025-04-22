@@ -5,10 +5,10 @@ from fastapi import APIRouter,Body,HTTPException
 from fastapi.params import Depends
 from sqlalchemy.orm import Session
 from starlette import status
-from src.entities.entities import Users
-from src.infra.database import get_database
-from src.models.token.token_response import TokenResponse
-from src.models.users.user_request import UserRequest
+from ..entities.entities import Users
+from ..infra.database import get_database
+from ..models.token.token_response import TokenResponse
+from ..models.users.user_request import UserRequest
 from passlib.context import  CryptContext
 from fastapi.security import  OAuth2PasswordRequestForm,OAuth2PasswordBearer
 from jose import jwt,JWTError
@@ -26,6 +26,7 @@ ALGORITHM = "HS256"
 
 crypt_password = CryptContext(schemes=["bcrypt"],deprecated="auto")
 depends_db = Annotated[Session,Depends(get_database)]
+
 
 #tokenUrl é o path onde nos enviamos o bearer token
 #repara que o nome é token do url

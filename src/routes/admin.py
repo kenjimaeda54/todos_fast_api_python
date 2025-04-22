@@ -7,9 +7,9 @@ from sqlalchemy.orm import Session
 from typing_extensions import Annotated
 from starlette import status
 
-from src.entities.entities import Todos, Users
-from src.infra.database import get_database
-from src.routes.auth import get_current_user
+from ..entities.entities import Todos, Users
+from ..infra.database import get_database
+from ..routes.auth import get_current_user
 
 router = APIRouter(
     prefix="/admin",
@@ -34,6 +34,11 @@ async def read_todos(user: depends_user, db: depends_database):
 async def delete_todo(user: depends_user, db: depends_database, todo_id: Annotated[int, Path(qt=0)]):
     if user.get("role") != "admin":
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authenticated")
+
+    todo_database = db.query(Todos).filter(cast("Column[boolean]", Todos.id == todo_id)).first()
+
+    if todo_database is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Todo not found")
 
     db.query(Todos).filter(cast("Column[boolean]", Todos.id == todo_id)).delete()
 

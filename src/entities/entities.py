@@ -1,6 +1,6 @@
 from sqlalchemy import Integer,String,Column,Boolean,ForeignKey
 
-from src.infra.database import Base
+from ..infra.database import Base
 
 
 class Users(Base):
@@ -20,7 +20,7 @@ class Users(Base):
 class Todos(Base):
     __tablename__ = "todos"
 
-    id = Column(Integer,primary_key=True)
+    id = Column(Integer,primary_key=True,autoincrement=True)
     title = Column(String)
     description = Column(String)
     priority = Column(Integer)
